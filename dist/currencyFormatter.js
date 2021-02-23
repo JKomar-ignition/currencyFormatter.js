@@ -126,6 +126,7 @@ OSREC.CurrencyFormatter = {
 		PLN: 'zł',
 		PYG: '₲',
 		QAR: 'ر.ق.‏',
+		RON: 'lei',
 		RSD: 'дин.',
 		RUB: '₽',
 		RWF: 'RF',
@@ -1055,7 +1056,7 @@ OSREC.CurrencyFormatter = {
 		var defaultLocales = OSREC.CurrencyFormatter.defaultLocales;
 		var symbols = OSREC.CurrencyFormatter.symbols;
 
-		var locale, currency, symbol, pattern, decimal, group, valueOnError;
+		var locale, currency, symbol, pattern, decimal, group, valueOnError, necessaryFloat, fractionalDigits;
 
 		// Perform checks on inputs and set up defaults as needed (defaults to en, USD)
 
@@ -1073,6 +1074,8 @@ OSREC.CurrencyFormatter = {
 		decimal = p.decimal || locale.d;
 		group = p.group || locale.g;
 		valueOnError = typeof p.valueOnError === 'undefined' ? 0 : p.valueOnError;
+		necessaryFloat = typeof p.necessaryFloat === 'undefined' ? false : p.necessaryFloat;
+		fractionalDigits = typeof p.fractionalDigits === 'undefined' ? 2 : p.fractionalDigits;
 
 		var formatDetails = {
 			pattern: pattern,
@@ -1080,7 +1083,9 @@ OSREC.CurrencyFormatter = {
 			group: group,
 			symbol: symbol,
 			valueOnError: valueOnError,
-			postFormatFunction: p.postFormatFunction
+			postFormatFunction: p.postFormatFunction,
+			necessaryFloat: necessaryFloat,
+			fractionalDigits: fractionalDigits
 		};
 
 		return formatDetails;
@@ -1099,6 +1104,8 @@ OSREC.CurrencyFormatter = {
 		var symbol = formatDetails.symbol;
 		var valueOnError = formatDetails.valueOnError;
 		var postFormatFunction = formatDetails.postFormatFunction;
+		var necessaryFloat = formatDetails.necessaryFloat;
+		var fractionalDigits = formatDetails.fractionalDigits;
 
 		// encodePattern Function - returns a few simple characteristics of the pattern provided
 
@@ -1139,6 +1146,11 @@ OSREC.CurrencyFormatter = {
 		// Format function
 
 		var format = function format(n, f) {
+			//security in case of to small numbers in currency, if needed don't round value, just format with float
+			if (necessaryFloat && f.decimalPlaces < fractionalDigits && !Number.isInteger(n)) {
+				f.decimalPlaces = fractionalDigits;
+			}
+
 			var formattedNumber = OSREC.CurrencyFormatter.toFixed(Math.abs(n), f.decimalPlaces);
 
 			var splitNumber = formattedNumber.split(".");
