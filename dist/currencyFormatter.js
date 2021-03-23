@@ -1147,7 +1147,7 @@ OSREC.CurrencyFormatter = {
 
 		var format = function format(n, f) {
 			//security in case of to small numbers in currency, if needed don't round value, just format with float
-			if (necessaryFloat && f.decimalPlaces < fractionalDigits && !Number.isInteger(n)) {
+			if (necessaryFloat || f.decimalPlaces < fractionalDigits || !Number.isInteger(n)) {
 				f.decimalPlaces = fractionalDigits;
 			}
 
